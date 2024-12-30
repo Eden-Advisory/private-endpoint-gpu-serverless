@@ -3,7 +3,7 @@
 This system provides a secure, serverless solution for processing sensitive documents using Ollama's vision capabilities. It leverages Fly.io's GPU-enabled infrastructure, WireGuard for secure networking, and integrates with S3-compatible storage systems.
 
 ## Architecture Overview
-
+### Deployment
 ```mermaid
 graph TB
     Client[Client Application] -->|WireGuard VPN| Gateway[Fly.io Gateway]
@@ -19,6 +19,73 @@ graph TB
         end
     end
 ```
+### Data Processing Flow
+```mermaid
+sequenceDiagram
+    participant C as Client
+    participant DP as DocumentProcessor
+    participant SH as StorageHandler
+    participant IP as ImageProcessor
+    participant OC as OllamaClient
+    participant S3 as S3 Storage
+    participant O as Ollama API
+
+    C->>DP: Start Processing
+    activate DP
+    
+    DP->>SH: get_document_batch()
+    activate SH
+    SH->>S3: list_objects_v2
+    S3-->>SH: document list
+    SH-->>DP: filtered documents
+    deactivate SH
+
+    loop For each document
+        DP->>SH: get_object(doc_key)
+        activate SH
+        SH->>S3: get_object
+        S3-->>SH: PDF data
+        SH-->>DP: document content
+        deactivate SH
+
+        DP->>IP: process_pdf_to_images()
+        activate IP
+        Note right of IP: Convert PDF to images
+        IP-->>DP: raw images
+        deactivate IP
+
+        par Optimize Images
+            DP->>IP: optimize_image(img1)
+            DP->>IP: optimize_image(img2)
+            DP->>IP: optimize_image(imgN)
+        end
+
+        IP-->>DP: optimized images
+
+        loop For each page
+            DP->>OC: analyze_page()
+            activate OC
+            OC->>O: vision analysis request
+            O-->>OC: entity extraction results
+            OC-->>DP: page analysis
+            deactivate OC
+        end
+
+        DP->>DP: merge_entities()
+        Note right of DP: Deduplicate and merge entities
+
+        DP->>SH: save_results()
+        activate SH
+        SH->>S3: put_object (analysis)
+        S3-->>SH: confirmation
+        SH-->>DP: success
+        deactivate SH
+    end
+
+    DP->>DP: generate_final_report()
+    DP-->>C: Processing Complete
+    deactivate DP
+```
 
 ## Quick Setup Guide
 
@@ -32,9 +99,9 @@ graph TB
 
 1. Clone and initialize the project:
 ```bash
-git clone [repository-url]
-cd [repository-name]
-python -m venv .venv
+git clone https://github.com/Eden-Advisory/private-endpoint-gpu-serverless.git
+cd private-endpoint-gpu-serverless
+uv venv
 source .venv/bin/activate
 uv pip install -r requirements.txt
 ```
@@ -114,7 +181,7 @@ The worker system processes documents through several stages:
 
 Start the worker:
 ```bash
-python worker.py
+python3 worker.py
 ```
 
 ## Security Implementation
