@@ -1,0 +1,52 @@
+# Core Dependencies
+aiohttp
+aiofiles
+asyncio
+pydantic
+
+# S3 Integration
+boto3
+botocore
+
+# Configuration
+python-dotenv
+pyyaml
+
+# Ollama Integration
+ollama
+
+# Document Processing
+pdf2image
+Pillow
+pytesseract
+
+# Monitoring & Metrics
+prometheus-client
+psutil
+
+# Testing
+pytest
+pytest-asyncio
+pytest-cov
+
+# Development Tools
+black
+isort
+flake8
+
+# Type Checking
+mypy
+types-aiofiles
+types-boto3
+
+# Logging & Monitoring
+structlog
+python-json-logger
+
+# Performance & Optimization
+uvloop; sys_platform != 'win32'
+orjson
+
+# Security
+cryptography
+certifi
